@@ -39,7 +39,6 @@ flowchart LR
   EXEC -->|success| OUT[Answer / SQL / Table / Chart]
 ```
 
-
 ### 📌 Chart Selection Rules
 - **Line chart** → Time series  
 - **Bar chart** → Category-based aggregates  
