@@ -25,19 +25,79 @@
 ---
 
 
+
 ## 🧭 Architecture at a Glance
 
 ```mermaid
 flowchart LR
-  U[User Question] --> IA[Intent Analysis]
-  IA --> SCHEMA[Schema and Join Discovery]
-  SCHEMA --> SQLGEN[SQL Generation]
-  SQLGEN --> VAL[Validation (SELECT only)]
-  VAL -->|valid| EXEC[Execution Engine]
-  VAL -->|invalid| FEEDB[Corrective Feedback] --> SQLGEN
-  EXEC -->|error| RETRY[Retry up to 3] --> SQLGEN
-  EXEC -->|success| OUT[Answer / SQL / Table / Chart]
+
+  %% ================= Styles (Azure theme) =================
+  classDef azureBlue fill:#0078D4,stroke:#005A9E,color:#ffffff,stroke-width:1.3px,rx:6,ry:6;
+  classDef panel fill:#E6F1FB,stroke:#C7E0F4,color:#1A1A1A,stroke-width:1px,rx:10,ry:10;
+  classDef card fill:#FFFFFF,stroke:#005A9E,color:#1A1A1A,stroke-width:1.2px,rx:8,ry:8;
+  classDef data fill:#FFFFFF,stroke:#5B9BD5,color:#1A1A1A,stroke-width:1.2px,rx:8,ry:8;
+  linkStyle default stroke:#005A9E,stroke-width:1.2px;
+
+  %% ================= Input Layer =================
+  subgraph INPUT[Input]
+    direction TB
+    USER["(User / Streamlit UI)"]:::card
+    LLM["[Azure OpenAI<br/>GPT-4o / GPT-4.1]"]:::azureBlue
+  end
+  class INPUT panel
+
+  %% ================= Core Pipeline =================
+  subgraph CORE[NL2SQL System]
+    direction TB
+    ORCH[Orchestrator]:::card
+    LINK[Schema / Metadata Linker]:::card
+    SQLA[SQL Synthesis Agent]:::card
+    VAL[Validator & Guard]:::card
+    EXEC[Query Executor]:::card
+    DEC{Execution Result?}:::card
+    DBG["Debug Agent (auto-repair)"]:::card
+    ANSLLM[LLM Answer Generator]:::card
+    OUT[Final Response to User]:::card
+  end
+  class CORE panel
+
+  %% ================= Data & Registry =================
+  subgraph DATA[Data & Registry]
+    direction LR
+    DB["(Read-only Database)"]:::data
+    MR["(Metadata Registry)"]:::data
+  end
+  class DATA panel
+
+  %% ================= Tools (compact strip) =================
+  subgraph TOOLS[Tools & Libraries]
+    direction TB
+    TOOLSTRIP[LangGraph · FastAPI · SQLAlchemy · sqlglot · dateutil · Altair/Vega-Lite]:::card
+  end
+  class TOOLS panel
+
+  %% ================= Main Control/Data Flow =================
+  USER --> ORCH
+  LLM --> ORCH
+  ORCH --> LINK --> SQLA --> VAL --> EXEC --> DEC
+
+  %% ======= Branches after execution (3 explicit conditions) =======
+  DEC -->|Rows returned| ANSLLM
+  DEC -->|Empty result| DBG
+  DEC -->|SQL error| DBG
+
+  %% ======= Retry path from Debug back to Orchestrator =======
+  DBG -->|repair & retry| ORCH
+
+  %% ======= Human-like response back to the user =======
+  ANSLLM --> OUT --> USER
+
+  %% ======= Minimal data references (kept uncluttered) =======
+  LINK --- MR
+  SQLA --- MR
+  EXEC --- DB
 ```
+
 
 ### 📌 Chart Selection Rules
 - **Line chart** → Time series  
