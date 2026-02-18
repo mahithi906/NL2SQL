@@ -283,6 +283,9 @@ curl -X POST http://localhost:8000/nl2sql/query \
   -H "Content-Type: application/json" \
   -d "{\"question\":\"Top 10 suppliers by purchase order quantity\"}"
 ```
-
+## 🙌 Credits
+- Developed by: Mahithi Reddy
+- Mentorship: Ashfak K A
+- Inspired by AdventureWorks Manufacturing Schema
 ---
 
