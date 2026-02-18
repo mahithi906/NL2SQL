@@ -225,11 +225,3 @@ curl -X POST http://localhost:8000/nl2sql/query \
 
 ---
 
-## 🛠️ Troubleshooting
-
-### Mermaid not rendering?
-Use:
-
-````markdown
-```mermaid
-```
