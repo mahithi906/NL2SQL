@@ -24,19 +24,21 @@
 
 ---
 
+
 ## 🧭 Architecture at a Glance
 
 ```mermaid
 flowchart LR
   U[User Question] --> IA[Intent Analysis]
-  IA --> SCHEMA[Schema & Join Discovery]
+  IA --> SCHEMA[Schema and Join Discovery]
   SCHEMA --> SQLGEN[SQL Generation]
   SQLGEN --> VAL[Validation (SELECT only)]
   VAL -->|valid| EXEC[Execution Engine]
   VAL -->|invalid| FEEDB[Corrective Feedback] --> SQLGEN
-  EXEC -->|error| RETRY[Retry Logic (≤3 Attempts)] --> SQLGEN
-  EXEC -->|success| OUT[Answer • SQL • Table • Chart]
+  EXEC -->|error| RETRY[Retry up to 3] --> SQLGEN
+  EXEC -->|success| OUT[Answer / SQL / Table / Chart]
 ```
+
 
 ### 📌 Chart Selection Rules
 - **Line chart** → Time series  
