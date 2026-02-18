@@ -3,14 +3,10 @@ from datetime import datetime
 import random
 import pandas as pd
 
-# ------------------------------------------------------
 # PAGE CONFIG
-# ------------------------------------------------------
 st.set_page_config(page_title="NL2SQL Chatbot", page_icon="💬", layout="wide")
 
-# ------------------------------------------------------
 # SESSION STATE INIT
-# ------------------------------------------------------
 if "sessions" not in st.session_state:
     # sessions = {
     #   session_id: {
@@ -34,9 +30,8 @@ if "dark_mode" not in st.session_state:
 DEFAULT_SCHEMA_TEXT = "No schema uploaded yet."
 
 
-# ------------------------------------------------------
+
 # HELPERS: CREATE/INIT & NORMALIZE SESSIONS
-# ------------------------------------------------------
 def create_new_session():
     session_id = str(len(st.session_state.sessions) + 1)
     st.session_state.sessions[session_id] = {
@@ -66,9 +61,7 @@ def normalize_sessions():
 
 normalize_sessions()
 
-# ------------------------------------------------------
 # RANDOM SUGGESTIONS ENGINE (3 new after each user msg)
-# ------------------------------------------------------
 SUGGESTIONS = [
     "Show me total sales by month.",
     "List top 10 customers by revenue.",
@@ -101,10 +94,7 @@ def generate_new_suggestions():
             random.sample(SUGGESTIONS, 3)
         )
 
-
-# ------------------------------------------------------
 # THEME (LIGHT/DARK)
-# ------------------------------------------------------
 def inject_theme(dark):
     if dark:
         bg = "#0b1020"
@@ -216,9 +206,7 @@ html, body, [data-testid="stAppViewContainer"] {{
 inject_theme(st.session_state.dark_mode)
 
 
-# ------------------------------------------------------
 # MOCK PLACEHOLDERS (UI-ONLY) — Replace later with real NL→SQL & DB
-# ------------------------------------------------------
 def mock_generate_sql(nl: str) -> str:
     nl_low = nl.lower()
     table = "orders" if any(k in nl_low for k in ["order", "orders"]) else "customers"
@@ -239,9 +227,7 @@ def mock_generate_results(sql: str) -> pd.DataFrame:
     )
 
 
-# ------------------------------------------------------
 # SIDEBAR — Multi-Session + Schema Upload + Outputs Viewer (ALWAYS VISIBLE)
-# ------------------------------------------------------
 with st.sidebar:
     st.title("💬 Chats")
 
@@ -340,17 +326,15 @@ with st.sidebar:
         st.caption("Uploaded schema (JSON / SQL / TXT shown as-is):")
         st.code(chat.get("schema", DEFAULT_SCHEMA_TEXT), language="sql")
 
-# ------------------------------------------------------
+
 # MAIN HEADER
-# ------------------------------------------------------
 st.markdown(
     f"<div class='full-width-container'><h2>💬 {chat['name']}</h2></div>",
     unsafe_allow_html=True,
 )
 
-# ------------------------------------------------------
-# FULL-WIDTH CHAT (no right column now)
-# ------------------------------------------------------
+
+# FULL-WIDTH CHAT 
 st.markdown("<div class='full-width-container'>", unsafe_allow_html=True)
 st.markdown("<div class='panel'>", unsafe_allow_html=True)
 
@@ -398,9 +382,8 @@ for i, c in enumerate(scols):
 
 st.markdown("</div>", unsafe_allow_html=True)  # end full-width container
 
-# ------------------------------------------------------
+
 # CHAT INPUT
-# ------------------------------------------------------
 user_input = st.chat_input("Ask a question...")
 
 # Prefill from suggestion
@@ -408,9 +391,8 @@ if user_input is None and st.session_state.get("prefill"):
     user_input = st.session_state.prefill
     st.session_state.prefill = ""
 
-# ------------------------------------------------------
+
 # HANDLE INPUT (UI-only)
-# ------------------------------------------------------
 if user_input is not None:
     if user_input.strip() == "":
         st.warning("⚠️ Please enter a question.")
@@ -434,7 +416,6 @@ if user_input is not None:
 
         chat["last_sql"] = result["sql"]
         chat["last_df"] = pd.DataFrame(result["rows"])
-        # ---------------------------------------------------------------------
 
         # Assistant bubble: AI-generated text (only)
         ai_text = "Here are the results for your request. Use the sidebar outputs to view SQL, table, and chart."
