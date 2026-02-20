@@ -126,24 +126,20 @@ flowchart LR
 ## 🗂️ Repository Structure
 
 ```
-NL2SQL/
-│── frontend.py                # Streamlit chatbot UI
-│── backend/
-│   ├── api.py                 # FastAPI entrypoint
-│   ├── pipeline.py            # NL2SQL pipeline
-│   ├── intent.py              # Intent parsing
-│   ├── schema.py              # Schema + join logic
-│   ├── sqlgen.py              # SQL construction
-│   ├── validate.py            # SELECT-only validation
-│   ├── execute.py             # SQL execution engine
-│   ├── answer.py              # Natural language answer generation
-│   └── charts.py              # Chart configuration builder
-│── config/
-│   ├── schema.json            # Manufacturing schema
-│   └── settings.yaml          # Configurations
-│── data/                      # Optional dataset
+project/
+│── .gitignore
+│── main.py
+│── README.md
 │── requirements.txt
-└── README.md
+│
+├── app/
+│   ├── frontend.py
+│   ├── routes.py
+│   ├── schemas.py
+│   └── __init__.py
+│
+└── tests/
+    └── test_main.py
 ```
 
 ---
