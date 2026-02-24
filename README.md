@@ -132,13 +132,20 @@ project/
 │── README.md
 │── requirements.txt
 │
+├── .vscode/
+│   ├── extensions.json
+│   ├── launch.json
+│   └── settings.json
+│
 ├── app/
 │   ├── frontend.py
+│   ├── graph.py
 │   ├── routes.py
 │   ├── schemas.py
 │   └── __init__.py
 │
 └── tests/
+    ├── test_graph.py
     └── test_main.py
 ```
 
@@ -165,6 +172,48 @@ source .venv/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
+
+---
+
+## 🖥️ Visual Studio Code Quick Start
+
+Open the project folder in VS Code:
+
+```bash
+code .
+```
+
+Then follow these steps:
+
+### 1️⃣ Select the Python interpreter
+- Press **Ctrl+Shift+P** → `Python: Select Interpreter`
+- Choose **`.venv`** (the virtual environment created above)
+
+### 2️⃣ Install recommended extensions
+VS Code will prompt you to install the recommended extensions automatically.  
+If not, press **Ctrl+Shift+P** → `Extensions: Show Recommended Extensions`.
+
+| Extension | Purpose |
+|---|---|
+| Python (ms-python.python) | Core Python support |
+| Pylance | Fast type-checking & IntelliSense |
+| Black Formatter | Auto-format on save |
+| Debugpy | Advanced debugging |
+| GitLens | Git history & blame |
+| GitHub Copilot | AI code completion |
+
+### 3️⃣ Run / Debug
+Use the **Run & Debug** panel (**Ctrl+Shift+D**) and pick a configuration:
+
+| Configuration | What it does |
+|---|---|
+| **FastAPI: uvicorn (dev)** | Starts the API on `http://localhost:8000` with hot-reload |
+| **Streamlit: frontend** | Starts the chatbot UI on `http://localhost:8501` |
+| **Pytest: all tests** | Runs all tests with verbose output |
+
+### 4️⃣ Run tests from the Testing panel
+- Press **Ctrl+Shift+P** → `Python: Configure Tests` → select **pytest** and `tests/` folder
+- Click the ▶️ icon in the **Testing** side panel to run or debug individual tests
 
 ---
 

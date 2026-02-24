@@ -428,12 +428,13 @@ if user_input is not None:
         import requests
 
         response = requests.post(
-            "http://localhost:8000/nl2sql", json={"query": user_input}
+            "http://localhost:8000/api/nl2sql/query", json={"question": user_input}
         )
         result = response.json()
 
-        chat["last_sql"] = result["sql"]
-        chat["last_df"] = pd.DataFrame(result["rows"])
+        chat["last_sql"] = result.get("sql", "")
+        rows = result.get("result", [])
+        chat["last_df"] = pd.DataFrame(rows)
         # ---------------------------------------------------------------------
 
         # Assistant bubble: AI-generated text (only)
