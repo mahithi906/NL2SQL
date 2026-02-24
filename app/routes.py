@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from typing import List
-from .schemas import Item, ItemCreate
+from .schemas import Item, ItemCreate, NL2SQLRequest, NL2SQLResponse
+from .graph import nl2sql_graph, MAX_RETRIES
 
 router = APIRouter(prefix="/api")
 
@@ -28,3 +29,30 @@ def get_item(item_id: int):
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
     return item
+
+
+@router.post("/nl2sql/query", response_model=NL2SQLResponse)
+def nl2sql_query(payload: NL2SQLRequest):
+    """Run a natural-language question through the LangGraph NL2SQL pipeline."""
+    initial_state = {
+        "question": payload.question,
+        "schema_context": None,
+        "sql": None,
+        "validation_error": None,
+        "result": None,
+        "execution_error": None,
+        "answer": None,
+        "retries": 0,
+    }
+    final_state = nl2sql_graph.invoke(initial_state)
+    if final_state.get("execution_error") and final_state.get("retries", 0) >= MAX_RETRIES:
+        return NL2SQLResponse(
+            error=final_state["execution_error"],
+            retries=final_state.get("retries", 0),
+        )
+    return NL2SQLResponse(
+        answer=final_state.get("answer"),
+        sql=final_state.get("sql"),
+        result=final_state.get("result"),
+        retries=final_state.get("retries", 0),
+    )
