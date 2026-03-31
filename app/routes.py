@@ -13,12 +13,12 @@ async def nl2sql_api(payload: NL2SQLRequest):
     # Build a fresh agent instance per request so API calls do not share conversation memory
     agent = build_agent([])
 
-    # ✅ Send user question to LangGraph agent
+    # Send user question to LangGraph agent
     result = agent.invoke({"messages": [{"role": "user", "content": payload.question}]})
 
     messages = result["messages"]
 
-    # ✅ final model answer
+    # final model answer
     final_answer = messages[-1].content
 
     flow_trace = []
