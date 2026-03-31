@@ -1,0 +1,5 @@
+lang/Lib/
+.env
+venv/
+__pycache__/
+*.pyc
