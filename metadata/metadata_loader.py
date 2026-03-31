@@ -52,7 +52,7 @@ def get_tables():
                         "name": row.get("ColumnName", ""),
                         "description": row.get(
                             "ColoumnDescription", ""
-                        ),  # ✅ CSV typo preserved
+                        ),  
                         "data_type": row.get("DataType", ""),
                         "sample_values": row.get("SampleValues", ""),
                     }
