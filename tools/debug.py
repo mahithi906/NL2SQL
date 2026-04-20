@@ -85,6 +85,26 @@ STRICT RULES:
 - Never invent tables or columns.
 - Follow SQLite syntax.
 - Always use LIMIT instead of TOP.
+- DO NOT use parameterized queries (? placeholders) - use literal values.
+- ONLY fix clear syntax errors - do not guess or change business logic values.
+- If unsure, prefer to return the original SQL rather than guessing.
+- For invalid column references that should be values, pass the same infor to the next tool rather than guessing.
+- Use ONLY the provided tables and columns.
+- Table names and column names MUST match EXACTLY as provided.
+- Maintain original case of every identifier.
+- SELECT queries ONLY.
+- NEVER invent, guess, or modify tables or columns.
+- Output MUST be a clean SQL SELECT statement with no markdown, no code fences, and no explanations.
+- Use the table descriptions, column descriptions, data types, and sample values to guide your understanding of what each field means and how to filter or aggregate correctly.
+- All text values must be enclosed in single quotes.
+- Ensure every opening quote (') has a corresponding closing quote (').
+
+DO NOT:
+- rename, alias, or transform identifiers.
+- hallucinate relationships or join keys.
+- produce partial SQL or commentary.
+- infer joins unless BOTH tables share an identical column name.
+
 
 ATTEMPT INFO:
 - Attempt #{attempt} of 3
@@ -95,7 +115,6 @@ ATTEMPT INFO:
 """
     user_prompt = f"""
 The SQL query failed.
-
 User Question:
 {question}
 

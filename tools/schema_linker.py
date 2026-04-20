@@ -1,7 +1,7 @@
-import json
+import json  # To parse LLM Responses
 from langchain.tools import tool
 from config.azure_client import azure_llm
-from dotenv import load_dotenv
+from dotenv import load_dotenv  # To load environmnrt variables
 
 from metadata.metadata_loader import get_tables
 from config.settings import load_azure_settings
@@ -15,7 +15,8 @@ def schema_linker(question: str, short_term_history: list | None = None) -> dict
     """
     Schema linker tool that identifies relevant tables and columns from a natural language question.
 
-    Takes a user question and returns the database tables and columns that are relevant to answering it.
+    Takes a user question and returns the database tables and columns that are relevant to answering it,
+    including descriptions and sample values.
     Uses keyword matching and LLM fallback for robust schema grounding.
 
     Args:
@@ -23,19 +24,34 @@ def schema_linker(question: str, short_term_history: list | None = None) -> dict
         short_term_history: Optional short-term conversation history from the agent
 
     Returns:
-        Dictionary with 'tables' (list) and 'columns' (dict mapping tables to columns)
+        Dictionary with 'tables' (list of dicts with name and description) and 'columns' (dict mapping table names to list of column dicts with name, description, data_type, sample_values)
     """
 
-    question_raw = question.strip()
+    question_raw = question.strip()  # To prevent empty questions
     if not question_raw:
         return {"tables": [], "columns": {}, "error": "Empty question"}
 
-    # Load metadata (raw, untouched)
+    # Load table and coloumns metadata
     metadata = get_tables()
     real_tables = list(metadata.keys())
     real_columns = {t: [c["name"] for c in metadata[t]["columns"]] for t in real_tables}
 
-    # Prepare history (optional)
+    # full metadata of descriptin and smaple values for better understanding
+    full_metadata = {}
+    for table_name, table_info in metadata.items():
+        full_metadata[table_name] = {
+            "description": table_info["description"],
+            "columns": {
+                col["name"]: {
+                    "description": col["description"],
+                    "data_type": col["data_type"],
+                    "sample_values": col["sample_values"],
+                }
+                for col in table_info["columns"]
+            },
+        }
+
+    # Preparing history
     history_text = ""
     if short_term_history:
         lines = [f"- {msg.content}" for msg in short_term_history]
@@ -49,6 +65,12 @@ STRICT RULES:
 - Reproduce table names and column names verbatim.
 - Select ONLY the tables and columns strictly required to answer the question.
 - Output must contain ONLY actual tables and columns present in metadata.
+- Include ALL descriptions and sample values for selected tables and columns from the metadata.
+- Do NOT generate SQL.
+- Return ONLY the relevant tables and columns details with full metadata.
+- Use metadata verbatim with no alterations.
+- If no match is found, return:
+    “No relevant tables or columns found for the given question.”
 
 DO NOT:
 - rename, alias, normalize, or modify any identifier.
@@ -78,28 +100,44 @@ If MORE THAN ONE TABLE is selected:
 - Only include join columns that literally exist in the metadata.
 
 ------------------------------------------------------------
-DATE HANDLING (MANDATORY)
-------------------------------------------------------------
-- If the user question references time such as:
-“today”, “yesterday”, “current”, “latest”, “now”, “real-time”, “live”  or similar temporal synonyms,
- you MUST include the date or datetime column(s)
-exactly as defined in metadata.
-- Do NOT infer date ranges.
-- Do NOT rename or transform date fields.
-- IMPORTANT: Tables named with "live_data" (e.g., factory_gl_fct_ypo_live_data)
-must ONLY be selected when the user's date is exactly today (2025-11-16).
-For any other date (past, specific, or unspecified), use historical/metrics views.
-
-------------------------------------------------------------
 OUTPUT FORMAT (STRICT)
 ------------------------------------------------------------
 Return ONLY valid JSON in the form:
 
 {
-  "tables": ["Table1", "Table2"],
+  "tables": [
+    {
+      "name": "Table1",
+      "description": "Table description here"
+    },
+    {
+      "name": "Table2", 
+      "description": "Table description here"
+    }
+  ],
   "columns": {
-      "Table1": ["ColumnA", "ColumnB"],
-      "Table2": ["ColumnX"]
+    "Table1": [
+      {
+        "name": "ColumnA",
+        "description": "Column description here",
+        "data_type": "data type here",
+        "sample_values": "sample values here"
+      },
+      {
+        "name": "ColumnB",
+        "description": "Column description here", 
+        "data_type": "data type here",
+        "sample_values": "sample values here"
+      }
+    ],
+    "Table2": [
+      {
+        "name": "ColumnX",
+        "description": "Column description here",
+        "data_type": "data type here", 
+        "sample_values": "sample values here"
+      }
+    ]
   }
 }
 
@@ -112,39 +150,83 @@ EXAMPLES
 User: "Show the ReceivedQty for ProductID 530 in PurchaseOrderDetailID 4?"
 Output:
 {
-  "tables": ["PurchaseOrderDetail"],
+  "tables": [
+    {
+      "name": "PurchaseOrderDetail",
+      "description": "Stores detailed line‑items of vendor purchase orders, including ordered quantities, unit cost, received quantities, rejected quantities, and extended cost calculations."
+    }
+  ],
   "columns": {
-      "PurchaseOrderDetail": ["ReceivedQty", "ProductID", "PurchaseOrderDetailID"]
+    "PurchaseOrderDetail": [
+      {
+        "name": "ReceivedQty",
+        "description": "Units actually received against this line.",
+        "data_type": "decimal",
+        "sample_values": "[2.00,3.00,20.00,51.00,57.00]"
+      },
+      {
+        "name": "ProductID", 
+        "description": "Foreign key to the product being purchased.",
+        "data_type": "int",
+        "sample_values": "[1,2,4,317,318]"
+      },
+      {
+        "name": "PurchaseOrderDetailID",
+        "description": "Primary key (within the PO) for this line item.",
+        "data_type": "int", 
+        "sample_values": "[1,2,3,4,5]"
+      }
+    ]
   }
 }
 
 User: "How many work orders exist for product CA-5965?"
 Output:
 {
-  "tables": ["Product", "WorkOrder"],
+  "tables": [
+    {
+      "name": "Product",
+      "description": "Contains the master list of manufactured and purchased products, including product attributes, pricing, dimensions, classifications, and lifecycle information."
+    },
+    {
+      "name": "WorkOrder",
+      "description": "Represents manufacturing work orders describing which product to build, the quantity required, production dates, and related scrap or scheduling details."
+    }
+  ],
   "columns": {
-      "Product": ["ProductID", "ProductNumber"],
-      "WorkOrder": ["ProductID"]
+    "Product": [
+      {
+        "name": "ProductID",
+        "description": "Primary key; unique identifier for each product record.",
+        "data_type": "int",
+        "sample_values": "[1,2,3,4,316]"
+      },
+      {
+        "name": "ProductNumber",
+        "description": "Manufacturer’s internal product code (SKU/part number).",
+        "data_type": "nvarchar",
+        "sample_values": "["AR-5381","BA-8327","BB-7421","BB-8107","BB-9108"]"
+      }
+    ],
+    "WorkOrder": [
+      {
+        "name": "ProductID",
+        "description": "Foreign key to the product being manufactured on this work order.",
+        "data_type": "int",
+        "sample_values": "[3,316,324,327,328]"
+      }
+    ]
   }
 }
---------------------------------------------------------------
-Rules:
---------------------------------------------------------------
 
-    - Do NOT generate SQL.
-    - Return ONLY the relevant tables and columns details.
-    - Use metadata verbatim with no alterations.
-    - If no match is found, return:
-      “No relevant tables or columns found for the given question.”
 """
 
     # Build final LLM prompt
     system_prompt = (
         f"{SCHEMA_GROUNDING_AGENT_PROMPT}\n\n"
-        "Metadata Tables:\n"
-        f"{json.dumps(real_tables, indent=2)}\n\n"
-        "Metadata Columns:\n"
-        f"{json.dumps(real_columns, indent=2)}\n\n"
+        "Full Metadata:\n"
+        f"{json.dumps(full_metadata, indent=2)}\n\n"
+        "This is the conversation history and the current question:\n"
         f"{history_text}\n"
         "User Question:\n"
         f"{question_raw}\n\n"
@@ -158,5 +240,6 @@ Rules:
     except Exception:
         return {"tables": [], "columns": {}}
 
-    # Final output
-    return {"tables": parsed.get("tables", []), "columns": parsed.get("columns", {})}
+    # Return the LLM's enriched output directly
+    result = {"tables": parsed.get("tables", []), "columns": parsed.get("columns", {})}
+    return json.dumps(result)

@@ -6,18 +6,20 @@ from pathlib import Path
 EXCEL_PATH = Path(r"dataset/AdventureWorks2019Export.xls")
 
 DB_PATH = Path("data/adventureworks.sqlite3")
-DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+DB_PATH.parent.mkdir(
+    parents=True, exist_ok=True
+)  # Ensures if the diretcory exisstes for the SQLite to be created
 
 
 def build_sqlite():
     print("Reading Excel file:", EXCEL_PATH.resolve())
 
-    # Load all sheets in the Excel
+    # Loads the workbook data using pandas
     xls = pd.ExcelFile(EXCEL_PATH)
-    # Recreate DB from scratch
+    # Recreate DB from scratch evrytime I run this script
     if DB_PATH.exists():
         DB_PATH.unlink()
-
+    # Opens a new SQLite database file and creates a connection to it
     conn = sqlite3.connect(DB_PATH)
     print("Created SQLite database at:", DB_PATH.resolve())
 
@@ -25,8 +27,11 @@ def build_sqlite():
     for sheet_name in xls.sheet_names:
         print(f"Processing sheet: {sheet_name}")
         df = pd.read_excel(EXCEL_PATH, sheet_name=sheet_name)
+        # Normalizing tables names by converting the Excel sheet names into safe SQLite table names
+        # By trimming whitespace, replacing spaces with underscores and lowercaseing the names
         table_name = sheet_name.strip().replace(" ", "_").lower()
         print(f"Writing table '{table_name}' with {len(df)} rows")
+        # Writing dataframes into SQLite
         df.to_sql(table_name, conn, if_exists="replace", index=False)
 
     conn.close()

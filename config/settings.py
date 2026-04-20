@@ -1,12 +1,14 @@
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass  # For clean,type safe settings class
 from dotenv import load_dotenv
 
+# dataclass makes settings immutable and easy to validate
 load_dotenv()
 
 
 @dataclass
 class AzureSettings:
+    # Fields for Azure OpenAI configuration
     endpoint: str
     api_key: str
     chat_deployment: str

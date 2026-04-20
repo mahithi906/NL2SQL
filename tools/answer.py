@@ -9,16 +9,19 @@ settings = load_azure_settings()
 
 @tool
 def answering_agent(
-    question: str, rows: list, row_count: int, short_term_history: list | None = None
+    question: str,
+    rows: list | None = None,
+    row_count: int = 0,
+    short_term_history: list | None = None,
 ) -> dict:
     """
     Converts SQL executor results into a natural-language answer.
 
     Parameters:
         question: user question (string)
-        rows: SQL result rows (list of dicts)
+        rows: SQL result rows (list of dicts) - optional
         row_count: number of rows (int)
-        short_term_history: Optional short-term conversation history from the agent
+        short_term_history: Optional short-term conversation history
 
     Returns:
         {
@@ -26,15 +29,19 @@ def answering_agent(
         }
 
     Behavior:
-    - If data exists → summarize results
-    - If no data → explain no data found
+    - Provides natural-language summary of results
+    - Uses conversation history for context
     """
+
+    if rows is None:
+        rows = []
 
     # --- History ---
     history_text = ""
     if short_term_history:
         lines = [f"- {msg.content}" for msg in short_term_history]
         history_text = "Previous conversation:\n" + "\n".join(lines) + "\n\n"
+        print(f"[ANSWERING_AGENT] Using {len(short_term_history)} history items")
 
     system_prompt = """
 You are a conversational data assistant.
@@ -42,10 +49,10 @@ You are a conversational data assistant.
 STRICT RULES:
 - DO NOT mention SQL, tables, databases, schema or rows.
 - DO NOT describe internal processing.
-- DO NOT output lists, bullet points, or structured formats.
-- DO NOT repeat field names unless necessary.
 - Speak naturally and conversationally.
 - Provide a smooth explanation of the results.
+- USE the previous conversation history to understand context.
+
 """
 
     user_prompt = f"""

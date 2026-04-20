@@ -6,7 +6,7 @@ def get_tables():
     """
     Load metadata.csv and return a dictionary keyed by table name.
 
-    Structure:
+    Structure(returning):
     {
         "Product": {
             "name": "Product",
@@ -31,7 +31,7 @@ def get_tables():
 
     try:
         with open(path, newline="", encoding="utf-8") as f:
-            reader = csv.DictReader(f)
+            reader = csv.DictReader(f)  # Opening the file with DictReader
 
             for row in reader:
                 tbl = row.get("TableName")
@@ -52,7 +52,7 @@ def get_tables():
                         "name": row.get("ColumnName", ""),
                         "description": row.get(
                             "ColoumnDescription", ""
-                        ),  # ✅ CSV typo preserved
+                        ),  #  CSV typo preserved
                         "data_type": row.get("DataType", ""),
                         "sample_values": row.get("SampleValues", ""),
                     }
