@@ -21,7 +21,7 @@ def answering_agent(
         question: user question (string)
         rows: SQL result rows (list of dicts) - optional
         row_count: number of rows (int)
-        short_term_history: Optional short-term conversation history
+        short_term_history: short-term conversation history
 
     Returns:
         {

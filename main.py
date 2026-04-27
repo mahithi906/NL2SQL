@@ -55,7 +55,7 @@ class MemoryAwareMiddleware(AgentMiddleware):
         }
 
         # Inject short_term_history for tools that require it
-        if tool_name in tools_requiring_context and self.hist_ref:
+        if tool_name in tools_requiring_context and self.hist_ref is not None:
             try:
                 # Access request.tool_call dict and inject history into its args
                 tool_call = request.tool_call
@@ -271,13 +271,14 @@ ERROR RECOVERY & SELF‑HEALING (MANDATORY)
 
 If database execution:
 - Fails, OR
-- Returns zero rows
+- Returns empty results when data is expected 
 
 You MUST:
 - Invoke the SQL debugging tool if available
 - Respect attempt limits enforced by the tool
 - Stop retrying once limits are reached
 - Proceed with graceful degradation using available outputs
+- Once called the debugging tool, You must not use data pipeline tools further for the quetsionand must produce an answer based on the debug tool only.
 
 ------------------------------------------------------------
 ANSWER GENERATION RULES (STRICT)
@@ -361,9 +362,10 @@ def run():
 
         print("\n Thinking...\n")
 
-        # Prepare initial state with messages and chat_history
+        # Prepare initial state with full messages history so LLM sees it
+        messages = list(short_term_history) + [HumanMessage(content=user_input)]
         initial_state = {
-            "messages": [HumanMessage(content=user_input)],
+            "messages": messages,  # LLM sees full conversation
             "chat_history": list(
                 short_term_history
             ),  # Populate chat_history from conversation history

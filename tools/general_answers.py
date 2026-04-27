@@ -21,7 +21,7 @@ def general_answer(question: str, short_term_history: list | None = None) -> dic
 
     Parameters:
         question: User's natural language message.
-
+        short_term_history: short-term conversation history from the agent
     Returns:
         { "answer": "<string>" }
     """

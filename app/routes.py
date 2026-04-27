@@ -13,6 +13,7 @@ from tools.state import STATE
 from datetime import datetime
 import uuid
 import json
+from langchain.messages import HumanMessage, AIMessage
 
 router = APIRouter()
 
@@ -131,10 +132,17 @@ async def process_nl2sql(payload: NL2SQLRequest):
         # Build agent with session conversation history
         agent = build_agent(session["history"])
 
-        # Invoke agent
-        response = agent.invoke({"messages": [{"role": "user", "content": question}]})
+        # Invoke agent with chat_history in initial state
+        # This ensures the agent can see prior conversation when making routing decisions
+        # Include history in messages so LLM actually sees it
+        input_messages = list(session["history"]) + [HumanMessage(content=question)]
+        initial_state = {
+            "messages": input_messages,  # LLM sees full conversation
+            "chat_history": session["history"],  # Also for middleware/tools
+        }
+        response = agent.invoke(initial_state)
 
-        # Extract messages
+        # Extract messages from response
         messages = response.get("messages", [])
 
         # Extract final answer
@@ -215,8 +223,6 @@ async def process_nl2sql(payload: NL2SQLRequest):
                     pass
 
         # Update session history
-        from langchain.messages import HumanMessage, AIMessage
-
         session["history"].append(HumanMessage(content=question))
         session["history"].append(AIMessage(content=final_answer))
         session["last_sql"] = validated_sql or sql

@@ -25,6 +25,7 @@ def sql_synthesis(
         question: user natural-language question
         tables: list of relevant tables with descriptions (from schema_linker)
         columns: dict mapping table -> list of columns with descriptions, data_types, sample_values
+        short_term_history: list of previous messages in the conversation
     Returns:
         {
             "sql": "<generated SQL>"

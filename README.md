@@ -39,68 +39,182 @@ A full-stack natural language to SQL application with Streamlit frontend and Fas
 └──────────────────────────────────────────────────────────┘
 ```
 
-## Quick Start
+## Installation & Setup
 
 ### Prerequisites
 
-- Python 3.9+
-- Virtual environment activated (included in `lang/`)
-- Azure OpenAI credentials in `.env`
+- **Python 3.9+**
+- **Virtual environment** (included in `lang/` directory)
+- **Azure OpenAI credentials** (API key, endpoint, deployment name)
 
-### 1. Activate Virtual Environment
+### Step 1: Activate Virtual Environment
 
-```bash
-# Windows PowerShell
+**Windows PowerShell:**
+```powershell
 & ".\lang\Scripts\Activate.ps1"
+```
 
-# macOS/Linux
+**macOS/Linux:**
+```bash
 source lang/bin/activate
 ```
 
-### 2. Set Environment Variables
+### Step 2: Configure Environment Variables
 
-Create a `.env` file in the project root:
+Create a `.env` file in the project root directory:
 
 ```env
-# Azure OpenAI
+# Azure OpenAI Configuration (REQUIRED)
 AZURE_OPENAI_API_KEY=your_key_here
 AZURE_OPENAI_ENDPOINT=https://your-instance.openai.azure.com/
 AZURE_OPENAI_API_VERSION=2024-12-01-preview
 AZURE_CHAT_DEPLOYMENT=your_deployment_name
 AZURE_EMBEDDINGS_DEPLOYMENT=your_embeddings_deployment
 
-
-# Database (optional, defaults to bundled SQLite)
+# Database Configuration (Optional - defaults to bundled SQLite)
 DATABASE_URL=sqlite:///data/adventureworks.sqlite3
 
-# Backend configuration
+# Backend Configuration (Optional)
 BACKEND_URL=http://127.0.0.1:8000/api
 ```
 
-### 3. Terminal 1 - Start FastAPI Backend
+### Step 3: Verify Installation
 
+```bash
+python -c "import langchain; import fastapi; import streamlit; print('All dependencies installed!')"
+```
+
+---
+
+## How to Run Backend
+
+### Start FastAPI Backend Server
+
+**Terminal 1:**
 ```bash
 python run_api.py
 ```
 
-The backend will start at `http://127.0.0.1:8000`
-
-- API Docs: http://127.0.0.1:8000/api/docs
-- ReDoc: http://127.0.0.1:8000/api/redoc
-
-### 4. Terminal 2 - Start Streamlit Frontend
-
-```bash
-python run_frontend.py
+**Expected Output:**
+```
+INFO:     Uvicorn running on http://127.0.0.1:8000
+INFO:     Application startup complete
 ```
 
-Or manually:
+The backend API will be available at:
+- **Base URL:** `http://127.0.0.1:8000`
+- **Interactive API Docs:** `http://127.0.0.1:8000/api/docs`
+- **ReDoc Documentation:** `http://127.0.0.1:8000/api/redoc`
+- **Health Check:** `curl http://127.0.0.1:8000/api/health`
 
+---
+
+## How to Run Streamlit Chatbot
+
+### Start Streamlit Frontend
+
+**Terminal 2 (keep Terminal 1 running with backend):**
 ```bash
 streamlit run app/frontend.py
 ```
 
-The frontend will open at `http://localhost:8501`
+**Expected Output:**
+```
+You can now view your Streamlit app in your browser.
+Local URL: http://localhost:8501
+```
+
+The chatbot interface will automatically open at `http://localhost:8501`
+
+### Usage
+1. Enter your natural language question in the chat input
+2. The AI will convert it to SQL and execute it
+3. View results, generated SQL, and visualizations in real-time
+4. Maintain multiple independent chat sessions
+
+---
+
+## Example Manufacturing Questions
+
+The AdventureWorks database contains manufacturing, sales, and product data. Try these example queries:
+
+### Product Queries
+- "What are the top 5 most expensive products?"
+- "What are the size and weight of the product CA‑5965?"
+- "Show me products with a list price between $100 and $200"
+- "What is the color of product CN-6137?"
+- “What are the size and weight of product CA‑5965?”
+- “List all products with DaysToManufacture greater than 0.”
+- “Show the product name and total quantity sold for ProductID 783.”
+- “Show the UnitPrice and product color for ProductID 318.”
+- “List all products with StockedQty equal to 550.”
+
+### Sales and Transaction Queries
+- “Show the total actual cost for ProductID 783.”
+- “How many transactions occurred for ProductID 921?”
+- “Show the total quantity transacted for ProductID 715.”
+- “Show the total quantity for ProductID 981 with transaction type ‘S’.”
+- “How many transactions happened on 2014‑05‑21 for ProductID 873?”
+- “Show the total actual cost for product AR‑5381 using transaction history.”
+- “Show the days to manufacture for product BA‑8327.”
+- “Show OrderQty and ScrappedQty for WorkOrderID 4.”
+- “How many work orders exist for ProductID 732 between 2011‑06‑01 and 2011‑06‑20?”
+- “Show the total OrderQty for ProductID 738 on 2011‑06‑03.”
+
+### Manufacturing Queries
+- "How many products are currently in stock?"
+- “List all operation sequences and locations for WorkOrderID 13.”
+- “Show the ActualStartDate and ActualEndDate for WorkOrderID 14 at LocationID 20.”
+- “How many work orders exist for product CA‑5965 (ProductID 317)?”
+- “Show the total routing cost for WorkOrderID 13.”
+
+
+---
+
+## Demo Video
+
+### Watch the Chatbot in Action
+
+A demo video showcasing the chatbot answering real manufacturing queries is available here:
+
+**[📹 Demo Video Link - Coming Soon](#demo-video-link)**
+
+### Demo Video Contents
+
+The demo video demonstrates:
+1. **Starting the Application**: Activating the environment and launching both backend and frontend
+2. **Product Queries**: "What are the top 5 most expensive products?"
+3. **Sales Queries**: "Show me the top 10 customers by total order value"
+4. **Manufacturing Queries**: "How many products are currently in stock?"
+5. **Real-time SQL Execution**: Viewing generated SQL and immediate results
+6. ** Follow up Question Answering ** : Chatbot responding to the follow up quetsions by using the memory
+7. **Multi-session Management**: Managing multiple independent conversations
+
+
+### Creating Your Own Demo Video
+
+To record a demo video of the chatbot:
+
+1. **Setup**: Ensure both backend (`python run_api.py`) and frontend (`streamlit run app/frontend.py`) are running
+2. **Recording Tool Options**:
+   - **Windows**: Built-in Xbox Game Bar (Win + G)
+   - **macOS**: QuickTime Player
+   - **Linux**: OBS Studio (Open Broadcaster Software)
+   - **Cross-platform**: OBS Studio or Camtasia
+3. **Recording Steps**:
+   - Open browser to `http://localhost:8501`
+   - Record at 1080p (1920x1080) for clarity
+   - Capture 2-3 example queries from each category
+   - Include SQL viewing and results display
+   - Duration: 3-5 minutes recommended
+4. **Hosting Options**:
+   - YouTube
+   - Vimeo
+   - GitHub Releases
+   - Project Wiki
+5. **Update Link**: Replace `#demo-video-link` above with your video URL
+
+---
 
 ## Project Structure
 

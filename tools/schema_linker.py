@@ -21,7 +21,7 @@ def schema_linker(question: str, short_term_history: list | None = None) -> dict
 
     Args:
         question: The user's natural language question about the data
-        short_term_history: Optional short-term conversation history from the agent
+        short_term_history: short-term conversation history from the agent
 
     Returns:
         Dictionary with 'tables' (list of dicts with name and description) and 'columns' (dict mapping table names to list of column dicts with name, description, data_type, sample_values)
@@ -243,3 +243,4 @@ Output:
     # Return the LLM's enriched output directly
     result = {"tables": parsed.get("tables", []), "columns": parsed.get("columns", {})}
     return json.dumps(result)
+    return history_text
