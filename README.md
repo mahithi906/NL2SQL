@@ -177,7 +177,7 @@ The AdventureWorks database contains manufacturing, sales, and product data. Try
 
 A demo video showcasing the chatbot answering real manufacturing queries is available here:
 
-**[📹 Demo Video Link - Coming Soon](#demo-video-link)**
+**[📹 Demo Video Link - ](https://github.com/mahithi906/NL2SQL/blob/main/compressed_NL2SQL_testing_video%20-%20demo1.mp4)**
 
 ### Demo Video Contents
 
